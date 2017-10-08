@@ -2,6 +2,8 @@ import time
 import hashlib
 import os
 
+import config
+
 SECONDS_PER_DAY = 24 * 60 * 60
 LAST_UPDATE_TIME = time.time()
 
@@ -24,10 +26,15 @@ LAST_UPDATE_TIME = time.time()
 # REWRITE THE KILL AND START
 import subprocess
 
-def run_ss():
+def getTodayPassword():
 	today = time.strftime("%a%b%d%Y", time.localtime()) 
-	todayhash = hashlib.md5(today.encode('utf-8')).hexdigest()
-	cmd = "./shadowsocks-server -m chacha20-ietf -p 8888 -k "+ todayhash
+	todayHash = hashlib.md5(today.encode('utf-8')).hexdigest() + config.secretKey
+	todayPassword = hashlib.md5(todayHash.encode("utf-8")).hexdigest()
+	return todayPassword
+
+def run_ss():
+	cmd = "./shadowsocks-server -m chacha20-ietf -p 8888 -k "+ getTodayPassword()
+	print(cmd)
 	childprocess = subprocess.Popen(cmd, shell=True)
 	return childprocess
 
