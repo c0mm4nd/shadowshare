@@ -22,11 +22,12 @@ class ShareHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("**Today**, ip is " + config.ipAddress + ", encryption is chacha20-ietf, port is 8888, password is " + getTodayPassword())
 
-application = tornado.web.Application([
-    (r"/", MainHandler),
-    (r"/hash/.*", ShareHandler),    
-])
+
 
 if __name__ == "__main__":
+    application = tornado.web.Application([
+        (r"/", MainHandler),
+        (r"/hash/.*", ShareHandler),    
+    ])    
     application.listen(80)
-    tornado.ioloop.IOLoop.instance().start()
+    tornado.ioloop.IOLoop.current().start()
