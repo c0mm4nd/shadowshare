@@ -1,2 +1,6 @@
 __pycache__
 *.pyc
+*.log
+Config/config.py
+Config/config*.py
+Log/*.log
