@@ -6,9 +6,11 @@ try {
 		/* Hash accepted by the pool */
 		console.log("A"); 
 		num_a=num_a+1;
-		$('#HashURL').text(num_a*5 + '% Finished');
-		if (num_a == 20) {
-			getHashURL()
+		
+		if (num_a <= 20) {
+			$('#HashURL').text(num_a*5 + '% Finished');
+		}else{
+			getHashURL();
 		}
 	});
 	// window.setTimeout(getHashURL, 60000);
