@@ -6,12 +6,16 @@ import subprocess
 import threading
 import signal
 import logging
-
 import tornado
+import tornado.ioloop
+import tornado.iostream
+import socket
+
 # import schedule
 
-from Config import config
-import Server.server as server
+import config
+
+date = time.localtime().tm_mday
 
 ########################################################
 
@@ -20,8 +24,6 @@ log_handler = logging.FileHandler('Log/main.log')
 main_logger.addHandler(log_handler)
 
 ss_log = open("Log/shadowsocks.log","a")
-
-server_log_handler = logging.FileHandler("Log/server.log")
 
 ########################################################
 
@@ -37,8 +39,9 @@ def run_ss():
     cmd = "./shadowsocks-server -m chacha20-ietf -p 8888 -k "+ getTodayPassword()
     # cmd = "ping -n 100 8.8.8.8" # CMD for TEST
     main_logger.debug(cmd)
-    process = subprocess.Popen(["ping", "-t",  "8.8.8.8"], stdout=ss_log) # CMD for test
-    # process = subprocess.Popen(["./shadowsocks-server", "-m",  "chacha20-ietf", "-p", "8888", "-k", getTodayPassword()], stdout=ss_log)
+    # process = subprocess.Popen(["ping", "-t",  "8.8.8.8"], stdout=ss_log) # CMD for test
+    process = subprocess.Popen(["./shadowsocks-server", "-m",  "chacha20-ietf", "-p", "8888", "-k", getTodayPassword()], stdout=ss_log)
+    last_execute_time = time.
     def signal_exit(signum, frame):  
         main_logger.info('Get Signum:', signum)
         main_logger.debug('Subprocess Pid:', process.pid)
@@ -52,42 +55,35 @@ def run_ss():
 
 ########################################################
 
-def run_server():
-    application = tornado.web.Application([
-        (r"/", server.MainHandler),
-        (r"/hash/.*", server.ShareHandler),
-        (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": "Server/static"}),
-    ])
-
-    access_log = logging.getLogger("tornado.access")
-    app_log = logging.getLogger("tornado.application")
-    gen_log = logging.getLogger("tornado.general")
-    
-    tornado.log.enable_pretty_logging() 
-    
-    access_log.addHandler(server_log_handler)
-    app_log.addHandler(server_log_handler)
-    gen_log.addHandler(server_log_handler)
-
-    application.listen(80)
-    tornado.ioloop.IOLoop.current().start()
+def send_request(data=None):
+    if data is not None:
+        print(data.encode())
+    time.sleep(60)
+    if date is not time.localtime().tm_mday:
+        date = time.localtime().tm_mday
+        child_process.kill()
+        time.sleep(5)
+        child_process = run_ss()
+    msg = config.ipAddress + "\r\n"
+    stream.write(msg.encode())
+    stream.read_until(b"\r\n", send_request)
 
 ########################################################
 
 def main():
-    server_thread = threading.Thread(target=run_server,args=())
-    server_thread.setDaemon(True)
-    server_thread.start()
     child_process = run_ss()
     # schedule.every().day.at("00:00").do(run_ss)
-    while True:
-        # schedule.run_pending()
-        time.sleep(24*60*60-10)
-        child_process.kill()
-        time.sleep(5)
-        child_process = run_ss()
-        time.sleep(5)
+    # while True:
+    #     # schedule.run_pending()
+    #     time.sleep(24*60*60-10)
+    #     child_process.kill()
+    #     time.sleep(5)
+    #     child_process = run_ss()
+    #     time.sleep(5)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+    stream = tornado.iostream.IOStream(s)
+    stream.connect(("shadowshare.tk", 8080), send_request)
+    tornado.ioloop.IOLoop.current().start()
 
 if __name__ == '__main__':
     main()
-
